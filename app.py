@@ -44,7 +44,7 @@ params = {'font.family': 'YouYuan',
           }
 rcParams.update(params)
 
-fig, ax = plt.subplots()
+fig_0, ax = plt.subplots()
 for col in data.columns:
     ax.plot(data['工作（重要必须）'], c='r', marker='*')
     ax.plot(data['生活（健康快乐）'], c='g', marker='*')
@@ -54,7 +54,7 @@ ax.set_xlabel("Date (day)")
 ax.set_xticks([i for i in range(num_day)])
 ax.set_xticklabels(data.index, rotation=45)
 ax.set_ylabel("Percentage (%)")
-st.pyplot(fig)
+st.pyplot(fig_0)
 
 # 画图
 fig_1, ax = plt.subplots(figsize=(9.2, 5), dpi=600)
