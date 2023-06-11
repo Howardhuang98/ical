@@ -27,9 +27,8 @@ def load_data(days):
 
 num_day = st.slider("Number of Days", 0, 30, 7)
 
-st.text('Loading data...')
+st.text(f"Now:{datetime_now.strftime('%Y-%m-%d')}")
 data = load_data(num_day)
-st.text('success')
 data
 
 # 画图
