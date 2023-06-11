@@ -5,14 +5,16 @@ import requests as r
 import icalendar
 
 tz = ZoneInfo("Asia/Shanghai")
-work_url = r"http://p45-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgOXmRhGVc3dF9eOX0ffGpOg"
-happy_url = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgM6V2h_Dd_m0eiqmceMwF9vDmA08jWqeFqmTKsJN_9MI4Pe1EUF89sc5vbKn5ogYb4"
-study_url = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgNVwYPqz3tAV6cRsBBHIg8wkh6DpdABxQXPH1T_kkkPSdsRSBGWlbSSpN9d2QljP80"
+work_url_hh = r"http://p45-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgOXmRhGVc3dF9eOX0ffGpOg"
+happy_url_hh = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgM6V2h_Dd_m0eiqmceMwF9vDmA08jWqeFqmTKsJN_9MI4Pe1EUF89sc5vbKn5ogYb4"
+study_url_hh = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgNVwYPqz3tAV6cRsBBHIg8wkh6DpdABxQXPH1T_kkkPSdsRSBGWlbSSpN9d2QljP80"
+work_url_myj = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgPSWgzdQwLzSle08QRT3GetDkVD4bKHePXfWzd2a356jfCPtvaUMj8W7lP7FRx408A"
+happy_url_myj = r"http://p221-caldav.icloud.com.cn/published/2/ODQxMTE2MTk0OTg0MTExNmmRQfdepP1yOTgzXuqBYGC9bbEniTWqhldVchEUH02T"
+study_url_myj = r"http://p221-caldav.icloud.com.cn/published/2/ODQxMTE2MTk0OTg0MTExNmmRQfdepP1yOTgzXuqBYGAAZttDPyNyxr30A19yxhXmvM6yXTAcMEceC3izthUmCL9zU75dxWcrp5gpYeQgmQw"
 datetime_now = datetime.now(tz=tz)
 
 
 class MultiCalendar:
-
     def __init__(self, url, *more_url):
         self.cals = []
         data = r.get(url)
@@ -64,7 +66,11 @@ def get_name(cal):
 
 
 if __name__ == '__main__':
-    mc = MultiCalendar(work_url, happy_url, study_url)
+    mc = MultiCalendar(work_url_hh, happy_url_hh, study_url_hh)
     for d in range(7):
         data = mc.analyze(datetime_now-timedelta(days=d), verbal=False)
+        print(data)
+    mc = MultiCalendar(work_url_myj, happy_url_myj, study_url_myj)
+    for d in range(7):
+        data = mc.analyze(datetime_now - timedelta(days=d), verbal=False)
         print(data)
