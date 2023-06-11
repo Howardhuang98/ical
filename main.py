@@ -5,6 +5,7 @@ import requests as r
 import icalendar
 from matplotlib import pyplot as plt, rcParams
 import streamlit as st
+from streamlit_echarts import st_echarts
 
 tz = ZoneInfo("Asia/Shanghai")
 work_url_hh = r"http://p45-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMDIxNg7mk8kqxapws55OOPjqcgOXmRhGVc3dF9eOX0ffGpOg"
@@ -14,6 +15,8 @@ work_url_myj = r"http://p220-caldav.icloud.com.cn/published/2/MTAyMTY4NDI5NjQxMD
 happy_url_myj = r"http://p221-caldav.icloud.com.cn/published/2/ODQxMTE2MTk0OTg0MTExNmmRQfdepP1yOTgzXuqBYGC9bbEniTWqhldVchEUH02T"
 study_url_myj = r"http://p221-caldav.icloud.com.cn/published/2/ODQxMTE2MTk0OTg0MTExNmmRQfdepP1yOTgzXuqBYGAAZttDPyNyxr30A19yxhXmvM6yXTAcMEceC3izthUmCL9zU75dxWcrp5gpYeQgmQw"
 datetime_now = datetime.now(tz=tz)
+
+
 def hex_to_rgba(hex_code, alpha=1.0):
     """
     Convert a HEX color code to an RGBA tuple with the specified alpha value.
@@ -21,8 +24,9 @@ def hex_to_rgba(hex_code, alpha=1.0):
     # Remove '#' if present
     hex_code = hex_code.lstrip('#')
     # Convert to RGBA
-    rgb = tuple(int(hex_code[i:i+2], 16)/255 for i in (0, 2, 4))
+    rgb = tuple(int(hex_code[i:i + 2], 16) / 255 for i in (0, 2, 4))
     return rgb + (alpha,)
+
 
 class MultiCalendar:
     def __init__(self, url, *more_url):
@@ -80,35 +84,67 @@ def get_events(cal, dt: datetime):
 def get_name(cal):
     return cal['X-WR-CALNAME'].to_ical().decode('utf-8')
 
+
 def draw_bar(df):
-    params = {'font.family': 'YouYuan',
-              'font.serif': 'Arial',
-              'font.weight': 'normal',  # or 'blod'
-              'ytick.major.size': 1.5,
-              'ytick.labelsize': 12,
-              'ytick.major.pad': 2,
-              'figure.autolayout': True,
-              "axes.unicode_minus": False  # 该语句解决图像中的“-”负号的乱码问题
-              }
-    rcParams.update(params)
-    fig, ax = plt.subplots(figsize=(9.2, 5), dpi=600)
-    for spine in ax.spines.values():
-        spine.set_color('#DDDDDD')
-    ax.xaxis.set_visible(False)
-    ax.set_xlim(0, 100)
-    df_cum = df.cumsum(axis='columns')
-    for i, (colname, color) in enumerate(zip(df.columns, [hex_to_rgba('F9BBB2'), hex_to_rgba('BCDDBC'), hex_to_rgba('9FC3D1'), hex_to_rgba('FCF1A4')])):
-        widths = df.iloc[:, i]
-        starts = df_cum.iloc[:, i] - widths
-        rects = ax.barh(df.index, widths, left=starts, height=0.5, label=colname, color=color)
-    ax.legend(ncols=4, bbox_to_anchor=(0.5, 1), loc='lower center', fontsize='medium')
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    return fig
+    options = {
+        "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
+        "legend": {
+            "data": df.columns.values.tolist()
+        },
+        "grid": {"left": "3%", "right": "4%", "bottom": "3%", "containLabel": True},
+        "xAxis": {"type": "value"},
+        "yAxis": {
+            "type": "category",
+            "data": df.index.values.tolist(),
+        },
+        "series": [
+            {
+                "name": colname,
+                "type": "bar",
+                "stack": "total",
+                "label": {"show": True},
+                "emphasis": {"focus": "series"},
+                "data": df.loc[:, colname].values.tolist(),
+            } for colname in df.columns
+
+        ],
+        "color": ['#E53935', '#43A047', '#1E88E5', '#546E7A'],
+    }
+    st_echarts(options=options, height="500px")
+
+def draw_pie(df):
+    options = {
+        "title": {"text": "日历活动比例分布", "subtext": "Howard", "left": "center"},
+        "tooltip": {"trigger": "item"},
+        "legend": {"orient": "vertical", "left": "left", },
+        "series": [
+            {
+                "name": "活动类型",
+                "type": "pie",
+                "radius": "50%",
+                "data": [
+                    {"value": df.loc[:, colname].sum(), "name": colname} for colname in df.columns
+                ],
+                "emphasis": {
+                    "itemStyle": {
+                        "shadowBlur": 10,
+                        "shadowOffsetX": 0,
+                        "shadowColor": "rgba(0, 0, 0, 0.5)",
+                    }
+                },
+                "color": ['#E53935', '#43A047', '#1E88E5', '#546E7A'],
+
+            }
+        ],
+    }
+    st_echarts(
+        options=options, height="600px",
+    )
 
 if __name__ == '__main__':
     mc = MultiCalendar(work_url_hh, happy_url_hh, study_url_hh)
     for d in range(7):
-        data = mc.analyze(datetime_now-timedelta(days=d), verbal=False)
+        data = mc.analyze(datetime_now - timedelta(days=d), verbal=False)
         print(data)
     mc = MultiCalendar(work_url_myj, happy_url_myj, study_url_myj)
     for d in range(7):

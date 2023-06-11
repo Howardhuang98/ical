@@ -2,8 +2,10 @@ import streamlit as st
 from datetime import timedelta
 import matplotlib.pyplot as plt
 import pandas as pd
+from streamlit_echarts import st_echarts
+
 from main import MultiCalendar, work_url_hh, happy_url_hh, study_url_hh, work_url_myj, happy_url_myj, study_url_myj, \
-    datetime_now, draw_bar
+    datetime_now, draw_bar, draw_pie
 from matplotlib import rcParams
 
 st.title(f"Now:{datetime_now.strftime('%Y-%m-%d')}")
@@ -24,41 +26,18 @@ def load_data(days, url, *more_url):
     df = pd.DataFrame()
     for d in range(days):
         date = datetime_now - timedelta(days=d)
-        row = mc.analyze(date, verbal=True)
+        row = mc.analyze(date, verbal=False)
         df = pd.concat([df, pd.DataFrame(row, index=[date.date().strftime('%Y-%m-%d')])])
     df.sort_index(ascending=True, inplace=True)
-    return df
+    return df.round(2)
 
 
 data = load_data(num_day, work_url_hh, happy_url_hh, study_url_hh)
 st.dataframe(data, use_container_width=True)
 
-# # 画图
-# params = {'font.family': 'YouYuan',
-#           'font.serif': 'Arial',
-#           'font.weight': 'normal',  # or 'blod'
-#           'ytick.major.size': 1.5,
-#           'ytick.labelsize': 'large',
-#           'ytick.major.pad': 2,
-#           'figure.autolayout': True,
-#           "axes.unicode_minus": False  # 该语句解决图像中的“-”负号的乱码问题
-#           }
-# rcParams.update(params)
-#
-# fig_0, ax = plt.subplots()
-# for col in data.columns:
-#     ax.plot(data['工作（重要必须）'], c='r', marker='*')
-#     ax.plot(data['生活（健康快乐）'], c='g', marker='*')
-#     ax.plot(data['学习（自我提升）'], c='b', marker='*')
-#     ax.plot(data['碎片（发呆赖床）'], c='gray', marker='*')
-# ax.set_xlabel("Date (day)")
-# ax.set_xticks([i for i in range(num_day)])
-# ax.set_xticklabels(data.index, rotation=45)
-# ax.set_ylabel("Percentage (%)")
-# st.pyplot(fig_0)
+draw_pie(data)
+draw_bar(data)
 
-# 画图
-st.pyplot(draw_bar(data))
 
 st.divider()
 st.header("Yujun's Calendar")
@@ -68,4 +47,5 @@ st.dataframe(data, use_container_width=True)
 
 # 画图
 
-st.pyplot(draw_bar(data))
+draw_pie(data)
+draw_bar(data)
